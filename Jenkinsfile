@@ -24,10 +24,11 @@ pipeline {
         //         echo "Deployment"
         //     }
         // }
-    }
     stage("Build") {
         steps {
             sh 'ls -ltr'
         }
     }
+    }
+    
 }
