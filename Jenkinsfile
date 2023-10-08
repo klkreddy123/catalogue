@@ -1,15 +1,14 @@
 pipeline {
     agent { node { label 'AGENT-1' } }
     stages {
-        stage('Install dependencies') {
-            steps { 
+        stage('Install depdencies') {
+            steps {
                 sh 'npm install'
             }
         }
-        stage('Unit Test') {
+        stage('Unit test') {
             steps {
-                echo 'Unit testing is done here'
-                echo 'Unit testing is verifying here'
+                echo "unit testing is done here"
             }
         }
         //sonar-scanner command expect sonar-project.properties should be available
@@ -19,43 +18,44 @@ pipeline {
         //         sh 'sonar-scanner'
         //     }
         // }
-        // stage('Deploy') {
-        //     steps {
-        //         echo "Deployment"
-        //     }
-        // }
-    stage("Build") {
-        steps {
-            sh 'ls -ltr'
-            sh 'zip -r catalogue.zip ./* --exclude=.git --exclude=.zip'
+        stage('Build') {
+            steps {
+                sh 'ls -ltr'
+                sh 'zip -r catalogue.zip ./* --exclude=.git --exclude=.zip'
+            }
+        }
+        stage('Publish Artifact') {
+            steps {
+                nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: '3.239.230.240:8081/',
+                    groupId: 'com.roboshop',
+                    version: '1.0.1',
+                    repository: 'catalogue',
+                    credentialsId: 'nexus-auth',
+                    artifacts: [
+                        [artifactId: 'catalogue',
+                        classifier: '',
+                        file: 'catalogue.zip',
+                        type: 'zip']
+                    ]
+                )
+            }
+        }
+
+        
+        stage('Deploy') {
+            steps {
+                echo "Deployment"
+            }
         }
     }
-    stage("Publish Artifact") {
-        steps {
-        nexusArtifactUploader(
-            nexusVersion: 'nexus3',
-            protocol: 'http',
-            nexusUrl: '3.239.230.240:8081/',
-            groupId: 'com.roboshop',
-            version: '1.0.0',
-            repository: 'catalogue',
-            credentialsId: 'nexus-auth',
-            artifacts: [
-                [artifactId: catalogue,
-                classifier: '',
-                file: 'catalogue.zip',
-                type: 'jar']
-            ]
-     )
-        }
-    }
-    
-    }
-    post {
+
+    post{
         always{
-            echo 'cleaning  up workspace'
+            echo 'cleaning up workspace'
             deleteDir()
         }
     }
-    
 }
